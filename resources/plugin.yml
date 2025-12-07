@@ -1,0 +1,14 @@
+name: Privecy-Chest
+version: '1.3.0'
+main: org.ISoma05.privecyChest.PrivecyChest
+api-version: '1.21'
+authors: [ISoma05]
+permissions:
+  privacychest.admin:
+    description: Allows bypassing chest protection, managing access, and reloading the plugin.
+    default: op
+commands:
+  privacychest:
+    description: Manage your privacy chests
+    usage: /privacychest [create|setpassword|resetpassword|access|reload]
+    aliases: [ pchest, pch ]

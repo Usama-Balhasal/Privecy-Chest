@@ -1,0 +1,13 @@
+# Privecy-Chest Configuration
+
+prefix: "&7[&bIceForgeMC&7] "
+chest-name: "&bPrivate Chest"
+chest-lore:
+  - "&7Owner: &b%player%"
+  - "&7Private chest - only owner & trusted can open"
+
+# Who can use the plugin?
+# "everyone" = Everyone can use it.
+# "vip.use" = Only players with privacychest.vip.use can use it.
+# This is controlled via /privacychest access
+required-permission: "everyone"
