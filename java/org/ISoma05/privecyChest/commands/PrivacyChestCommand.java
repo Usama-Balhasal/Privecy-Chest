@@ -44,14 +44,12 @@ public class PrivacyChestCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            // Allow console to reload if needed, but for now restricting to players as per structure
             sender.sendMessage("Only players can use this command.");
             return true;
         }
 
         Player player = (Player) sender;
 
-        // 1. OPEN GUI if no arguments
         if (args.length == 0) {
             if (!checkAccess(player)) return true;
             guiManager.openMainMenu(player);
@@ -60,7 +58,6 @@ public class PrivacyChestCommand implements CommandExecutor, TabCompleter {
 
         String sub = args[0].toLowerCase(Locale.ROOT);
 
-        // 2. Admin Commands (Access & Reload)
         if (sub.equals("access") || sub.equals("reload")) {
             if (!player.hasPermission("privacychest.admin")) {
                 player.sendMessage(prefix() + "§cYou do not have permission.");
@@ -86,7 +83,6 @@ public class PrivacyChestCommand implements CommandExecutor, TabCompleter {
             }
         }
 
-        // Check general access for other commands
         if (!checkAccess(player)) return true;
 
         switch (sub) {

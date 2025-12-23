@@ -28,7 +28,6 @@ public class PasswordManager {
         this.config = YamlConfiguration.loadConfiguration(file);
     }
 
-    // --- Password Operations ---
 
     public boolean hasPassword(UUID uuid) {
         return config.isSet("passwords." + uuid.toString());
@@ -48,7 +47,6 @@ public class PasswordManager {
         save();
     }
 
-    // --- Trusted Players Operations ---
 
     public List<UUID> getTrustedList(UUID owner) {
         List<String> raw = config.getStringList("trusted." + owner.toString());

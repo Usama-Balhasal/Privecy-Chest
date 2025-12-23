@@ -35,12 +35,10 @@ public class GUIManager implements Listener {
         return ChatColor.translateAlternateColorCodes('&', plugin.getConfig().getString("prefix", "&6PChest » "));
     }
 
-    // --- GUI Builders ---
 
     public void openMainMenu(Player player) {
         Inventory inv = Bukkit.createInventory(null, 27, ChatColor.DARK_GRAY + "Privacy Chest Menu");
 
-        // 1. Password Icon
         ItemStack pw = new ItemStack(Material.NAME_TAG);
         ItemMeta pwMeta = pw.getItemMeta();
         pwMeta.setDisplayName(ChatColor.GOLD + "Change Password");
@@ -48,7 +46,6 @@ public class GUIManager implements Listener {
         pw.setItemMeta(pwMeta);
         inv.setItem(11, pw);
 
-        // 2. Trust Icon
         ItemStack trust = new ItemStack(Material.PLAYER_HEAD);
         ItemMeta trustMeta = trust.getItemMeta();
         trustMeta.setDisplayName(ChatColor.AQUA + "Manage Trusted Players");
@@ -56,7 +53,6 @@ public class GUIManager implements Listener {
         trust.setItemMeta(trustMeta);
         inv.setItem(13, trust);
 
-        // 3. Get Chest Icon
         ItemStack getChest = new ItemStack(Material.CHEST);
         ItemMeta getMeta = getChest.getItemMeta();
         getMeta.setDisplayName(ChatColor.GREEN + "Get Private Chest");
@@ -64,7 +60,6 @@ public class GUIManager implements Listener {
         getChest.setItemMeta(getMeta);
         inv.setItem(15, getChest);
 
-        // Fillers
         ItemStack glass = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta gMeta = glass.getItemMeta();
         if (gMeta != null) gMeta.setDisplayName(" ");
@@ -81,7 +76,6 @@ public class GUIManager implements Listener {
 
         List<UUID> trusted = passwordManager.getTrustedList(player.getUniqueId());
 
-        // List Trusted Players (Heads)
         for (UUID uuid : trusted) {
             OfflinePlayer off = Bukkit.getOfflinePlayer(uuid);
             ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
@@ -89,21 +83,18 @@ public class GUIManager implements Listener {
             if (off.getName() != null) meta.setOwningPlayer(off);
             meta.setDisplayName(ChatColor.RED + (off.getName() != null ? off.getName() : "Unknown"));
             meta.setLore(Arrays.asList("§7UUID: " + uuid.toString().substring(0, 8) + "...", "§eClick to REMOVE trust"));
-            // Store UUID on item to identify it
             meta.getPersistentDataContainer().set(ownerKey, PersistentDataType.STRING, uuid.toString());
             skull.setItemMeta(meta);
             inv.addItem(skull);
         }
 
-        // Add "Add Player" Button at bottom
         ItemStack addBtn = new ItemStack(Material.EMERALD_BLOCK);
         ItemMeta addMeta = addBtn.getItemMeta();
         addMeta.setDisplayName(ChatColor.GREEN + "+ Add Player");
         addMeta.setLore(Collections.singletonList("§7Click to select online players"));
         addBtn.setItemMeta(addMeta);
-        inv.setItem(49, addBtn); // Bottom center
+        inv.setItem(49, addBtn);
 
-        // Back Button
         ItemStack back = new ItemStack(Material.ARROW);
         ItemMeta bMeta = back.getItemMeta();
         bMeta.setDisplayName(ChatColor.YELLOW + "Back");
@@ -119,15 +110,14 @@ public class GUIManager implements Listener {
         List<UUID> alreadyTrusted = passwordManager.getTrustedList(player.getUniqueId());
 
         for (Player p : Bukkit.getOnlinePlayers()) {
-            if (p.getUniqueId().equals(player.getUniqueId())) continue; // Don't list self
-            if (alreadyTrusted.contains(p.getUniqueId())) continue; // Don't list already trusted
+            if (p.getUniqueId().equals(player.getUniqueId())) continue;
+            if (alreadyTrusted.contains(p.getUniqueId())) continue;
 
             ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
             SkullMeta meta = (SkullMeta) skull.getItemMeta();
             meta.setOwningPlayer(p);
             meta.setDisplayName(ChatColor.GREEN + p.getName());
             meta.setLore(Collections.singletonList("§eClick to ADD trust"));
-            // Store UUID
             meta.getPersistentDataContainer().set(ownerKey, PersistentDataType.STRING, p.getUniqueId().toString());
             skull.setItemMeta(meta);
             inv.addItem(skull);
@@ -142,65 +132,58 @@ public class GUIManager implements Listener {
         player.openInventory(inv);
     }
 
-    // --- Logic / Events ---
 
     @EventHandler
     public void onClick(InventoryClickEvent e) {
         String title = e.getView().getTitle();
-        if (!title.startsWith(ChatColor.DARK_GRAY + "")) return; // Quick filter
+        if (!title.startsWith(ChatColor.DARK_GRAY + "")) return;
 
         if (e.getCurrentItem() == null) return;
         Player player = (Player) e.getWhoClicked();
 
-        // Prevent taking items from GUI
         if (e.getClickedInventory() != null && e.getClickedInventory().equals(e.getView().getTopInventory())) {
             e.setCancelled(true);
         } else {
-            // Allow moving items in own inventory, but better to just cancel all for simplicity in this menu
             if (e.isShiftClick()) e.setCancelled(true);
             return;
         }
 
-        // MAIN MENU
         if (title.contains("Privacy Chest Menu")) {
             switch (e.getRawSlot()) {
-                case 11: // Password
+                case 11:
                     player.closeInventory();
                     player.sendMessage(prefix() + "§eTo change password: /pchest setpassword <newpass>");
                     break;
-                case 13: // Trust
+                case 13:
                     openTrustMenu(player);
                     break;
-                case 15: // Get Chest
+                case 15:
                     doCraftChest(player);
                     break;
             }
         }
-        // TRUST MENU
         else if (title.contains("Trusted Players")) {
-            if (e.getRawSlot() == 49) { // Add Button
+            if (e.getRawSlot() == 49) {
                 openOnlineSelection(player);
                 return;
             }
-            if (e.getRawSlot() == 45) { // Back
+            if (e.getRawSlot() == 45) {
                 openMainMenu(player);
                 return;
             }
 
-            // Remove Player Logic
             ItemStack clicked = e.getCurrentItem();
             if (clicked.getType() == Material.PLAYER_HEAD && clicked.hasItemMeta()) {
                 String uuidStr = clicked.getItemMeta().getPersistentDataContainer().get(ownerKey, PersistentDataType.STRING);
                 if (uuidStr != null) {
                     passwordManager.removeTrusted(player.getUniqueId(), UUID.fromString(uuidStr));
                     player.sendMessage(prefix() + "§cRemoved trust.");
-                    openTrustMenu(player); // Refresh
+                    openTrustMenu(player);
                 }
             }
         }
-        // ONLINE SELECT MENU
         else if (title.contains("Select Player")) {
-            if (e.getRawSlot() == 45) { // Back
+            if (e.getRawSlot() == 45) { 
                 openTrustMenu(player);
                 return;
             }
@@ -211,7 +194,7 @@ public class GUIManager implements Listener {
                 if (uuidStr != null) {
                     passwordManager.addTrusted(player.getUniqueId(), UUID.fromString(uuidStr));
                     player.sendMessage(prefix() + "§aAdded trust.");
-                    openTrustMenu(player); // Go back to list
+                    openTrustMenu(player);
                 }
             }
         }

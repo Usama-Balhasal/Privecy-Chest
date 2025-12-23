@@ -13,21 +13,16 @@ public final class PrivecyChest extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // 1. Load Config
         saveDefaultConfig();
 
-        // 2. Initialize Data Manager
         this.passwordManager = new PasswordManager(getDataFolder());
 
-        // 3. Initialize GUI Manager
         GUIManager guiManager = new GUIManager(this, passwordManager);
         getServer().getPluginManager().registerEvents(guiManager, this);
 
-        // 4. Register Listeners
         getServer().getPluginManager().registerEvents(new ChestPlaceListener(this), this);
         getServer().getPluginManager().registerEvents(new ChestProtectionListener(this, passwordManager), this);
 
-        // 5. Register Command
         if (getCommand("privacychest") != null) {
             PrivacyChestCommand pcc = new PrivacyChestCommand(this, passwordManager, guiManager);
             getCommand("privacychest").setExecutor(pcc);
@@ -39,6 +34,5 @@ public final class PrivecyChest extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
     }
 }
